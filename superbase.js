@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 // 1. Initialize Supabase Client
 // Replace placeholders with your project API credentials
 const supabaseUrl = 'https://hcciptlwlllbaicwcwua.supabase.co'
-const supabaseAnonKey = 'sb_publishable_PbQ71yJ8meJvLacuRq-zQg_Ds81dGdL'
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjY2lwdGx3bGxsYmFpY3djd3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NzQzMDcsImV4cCI6MjA5OTA1MDMwN30.K6OP6UuRFW2rv2cUDvT0NWVq-FKxAcTJXI14PuFmf34'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
