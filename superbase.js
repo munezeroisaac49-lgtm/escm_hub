@@ -1,63 +1,58 @@
-import { createClient } from '@supabase/supabase-js'
-
-// 1. Initialize Supabase Client
-// Replace placeholders with your project API credentials
+// Initialize Supabase Client globally using the browser window object
 const supabaseUrl = 'https://hcciptlwlllbaicwcwua.supabase.co'
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjY2lwdGx3bGxsYmFpY3djd3VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NzQzMDcsImV4cCI6MjA5OTA1MDMwN30.K6OP6UuRFW2rv2cUDvT0NWVq-FKxAcTJXI14PuFmf34'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey)
 
 /**
- * Handles Sign Up with custom metadata
- * @param {string} email
- * @param {string} password
- * @param {string} fullName
- * @param {string} userRole
+ * Handles User Registration (Sign Up) with Full Name and Role
  */
-export async function signUpUser(email, password, fullName, userRole) {
+async function signUp() {
+  const fullName = document.getElementById("full-name-input")?.value || "";
+  const email = document.getElementById("email-input")?.value || "";
+  const userRole = document.getElementById("user-role-select")?.value || "Student";
+  const password = document.getElementById("password-input")?.value || "";
+
   try {
     const { data, error } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
-        // Saves Full Name and Role into Supabase user metadata
         data: {
           full_name: fullName,
           user_role: userRole,
-        },
-      },
-    })
+        }
+      }
+    });
 
-    if (error) throw error
+    if (error) throw error;
 
-    alert('Sign up successful! Please check your email for a verification link.')
-    return data
+    alert("Sign up successful! Please check your email for a verification link.");
   } catch (error) {
-    alert(error.message)
-    console.error('Sign up error:', error.message)
-    return null
+    alert(error.message);
+    console.error("Sign up error:", error.message);
   }
 }
 
 /**
- * Handles Login
- * @param {string} email
- * @param {string} password
+ * Handles User Authentication (Login)
  */
-export async function logInUser(email, password) {
+async function login() {
+  const email = document.getElementById("email-input")?.value || "";
+  const password = document.getElementById("password-input")?.value || "";
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email,
-      password: password,
-    })
+      password: password
+    });
 
-    if (error) throw error
+    if (error) throw error;
 
-    alert('Logged in successfully!')
-    return data
+    alert("Logged in successfully!");
+    window.location.href = "dashboard.html"; // Redirects upon success
   } catch (error) {
-    alert(error.message)
-    console.error('Login error:', error.message)
-    return null
+    alert(error.message);
+    console.error("Login error:", error.message);
   }
 }
