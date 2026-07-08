@@ -1454,6 +1454,11 @@
         </div>
     </div>
 
+    <script type="module">
+        import { signUpUser, logInUser } from './supabase.js';
+        window.supabaseAuth = { signUpUser, logInUser };
+    </script>
+
     <script>
         const apiBase = '/api';
         let isLoggedIn = false;
@@ -1524,23 +1529,37 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const identifier = document.getElementById('loginEmail').value;
+            const identifier = document.getElementById('loginEmail').value.trim();
             const role = document.getElementById('loginRole').value;
             const password = document.getElementById('loginPassword').value;
 
             if (!identifier || !role || !password) {
-                alert('Please enter your email or username, role, and password.');
+                alert('Please enter your email, role, and password.');
                 return;
             }
 
             try {
-                const result = await apiFetch('/login', {
-                    method: 'POST',
-                    body: JSON.stringify({ identifier, role, password })
-                });
+                if (!window.supabaseAuth?.logInUser) {
+                    throw new Error('Supabase authentication is not available.');
+                }
 
-                authToken = result.token;
-                currentUser = result.user;
+                const result = await window.supabaseAuth.logInUser(identifier, password);
+                if (!result?.user) {
+                    throw new Error('Login was not completed.');
+                }
+
+                const userMeta = result.user?.user_metadata || {};
+                authToken = result.session?.access_token || 'supabase-session';
+                currentUser = {
+                    name: userMeta.full_name || identifier.split('@')[0],
+                    email: identifier,
+                    role: userMeta.user_role || role,
+                    avatar: (userMeta.full_name || identifier).charAt(0).toUpperCase(),
+                    profilePicture: null,
+                    bio: '',
+                    phone: '',
+                    department: ''
+                };
                 isLoggedIn = true;
                 saveSession();
 
@@ -1552,7 +1571,6 @@
                     loadHolidayPage();
                 }
                 await renderPendingApprovals();
-                alert(`Login successful as ${roleColors[role].label}!`);
             } catch (error) {
                 alert(error.message);
             }
@@ -1560,8 +1578,8 @@
 
         async function handleSignup(e) {
             e.preventDefault();
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
+            const name = document.getElementById('signupName').value.trim();
+            const email = document.getElementById('signupEmail').value.trim();
             const role = document.getElementById('signupRole').value;
             const password = document.getElementById('signupPassword').value;
 
@@ -1571,12 +1589,16 @@
             }
 
             try {
-                await apiFetch('/signup', {
-                    method: 'POST',
-                    body: JSON.stringify({ name, email, role, password })
-                });
+                if (!window.supabaseAuth?.signUpUser) {
+                    throw new Error('Supabase authentication is not available.');
+                }
+
+                const result = await window.supabaseAuth.signUpUser(email, password, name, role);
+                if (!result) {
+                    return;
+                }
+
                 toggleForms();
-                alert('Account created successfully and is pending approval by Headmaster or DOS.');
             } catch (error) {
                 alert(error.message);
             }
@@ -2091,11 +2113,6 @@
                 loadHolidayPage();
             }
         });
-   </script>
-    <!-- Core Supabase CDN Library (Loads first) -->
-    <script src="https://jsdelivr.net"></script>
-    
-    <!-- Your local file containing your login() and signUp() functions -->
-    <script src="supabase.js"></script>
+    </script>
 </body>
 </html>
